@@ -7,7 +7,7 @@ public class CommonEnemy : MonoBehaviour
     private NavMeshAgent aI;
     private GameObject player;
     private bool gameOver;
-    public Collider hitBox;
+    public SphereCollider hitBox;
     private bool canAttack = true;
     public float attackTime;
 
