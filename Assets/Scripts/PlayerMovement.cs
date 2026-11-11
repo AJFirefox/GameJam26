@@ -24,6 +24,7 @@ public class PlayerMovement : MonoBehaviour
 
     private Rigidbody rb;
     private Health health;
+    private PlayerStamina stamina;
     private float pitch;
     private Vector3 moveInput;
     private bool jumpPressed;
@@ -39,6 +40,7 @@ public class PlayerMovement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         health = GetComponent<Health>();
+        stamina = GetComponent<PlayerStamina>();   // optional: without it, rolling is free
         rb.freezeRotation = true;  // stop the capsule from tipping over
         Cursor.lockState = CursorLockMode.Locked;
     }
@@ -79,8 +81,8 @@ public class PlayerMovement : MonoBehaviour
         bool grounded = Physics.Raycast(transform.position, Vector3.down, 1.1f);
         Vector3 velocity = rb.linearVelocity;
 
-        // Start a roll in the move direction (or forward if standing still)
-        if (rollPressed && grounded && dashTimer <= 0f)
+        // Start a roll in the move direction (or forward if standing still). Costs stamina.
+        if (rollPressed && grounded && dashTimer <= 0f && (stamina == null || stamina.TrySpend(stamina.rollCost)))
         {
             dashDirection = moveInput.sqrMagnitude > 0.01f ? moveInput.normalized : transform.forward;
             dashSpeed = rollSpeed;
