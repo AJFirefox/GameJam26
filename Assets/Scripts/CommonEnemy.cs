@@ -2,13 +2,13 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class CommonEnemy : MonoBehaviour
+public class CommonEnemy : MonoBehaviour 
 {
-    private NavMeshAgent aI;
-    private GameObject player;
-    private bool gameOver;
+    protected NavMeshAgent aI;
+    protected GameObject player;
+    protected bool gameOver;
     public SphereCollider hitBox;
-    private bool canAttack = true;
+    protected bool canAttack = true;
     public float attackTime;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -26,7 +26,7 @@ public class CommonEnemy : MonoBehaviour
         Attacking();
     }
 
-    void FollowPlayer()
+    protected void FollowPlayer()
     {
 
         if (gameOver == false)
@@ -35,7 +35,7 @@ public class CommonEnemy : MonoBehaviour
         }
     }
 
-    void Attacking()
+    protected virtual void Attacking()
     {
         float distance = Vector3.Distance(transform.position, player.transform.position);
         if (distance <= 2 && canAttack)
@@ -46,7 +46,7 @@ public class CommonEnemy : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    protected void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
@@ -55,7 +55,7 @@ public class CommonEnemy : MonoBehaviour
         }
     }
 
-    IEnumerator ResetAttack()
+    protected IEnumerator ResetAttack()
     {
         yield return new WaitForSeconds(attackTime);
         canAttack = true;
