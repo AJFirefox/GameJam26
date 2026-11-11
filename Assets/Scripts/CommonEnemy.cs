@@ -6,10 +6,11 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Health))]
 public class CommonEnemy : MonoBehaviour
 {
-    private NavMeshAgent aI;
-    private GameObject player;
-    private Health health;
-    private Health playerHealth;
+    protected NavMeshAgent aI;
+    protected GameObject player;
+    protected Health health;
+    protected Health playerHealth;
+    protected bool gameOver;
 
     [Tooltip("Trigger collider with a Damage script on it (Target Tag = Player).")]
     public SphereCollider hitBox;
@@ -21,7 +22,8 @@ public class CommonEnemy : MonoBehaviour
     [Tooltip("How long the hitbox stays on during a swing.")]
     public float attackActiveTime = 0.2f;
 
-    private bool canAttack = true;
+    protected bool canAttack = true;
+
 
     void Start()
     {
@@ -54,12 +56,12 @@ public class CommonEnemy : MonoBehaviour
         Attacking();
     }
 
-    void FollowPlayer()
+    protected void FollowPlayer()
     {
         if (aI.isOnNavMesh) aI.SetDestination(player.transform.position);
     }
 
-    void Attacking()
+    protected virtual void Attacking()
     {
         float distance = Vector3.Distance(transform.position, player.transform.position);
         if (distance <= attackRange && canAttack)
@@ -69,13 +71,19 @@ public class CommonEnemy : MonoBehaviour
         }
     }
 
+
     IEnumerator Swing()
+
     {
         // Hitbox on for a short window, then off. The Damage script on the hitbox deals the damage.
         if (hitBox != null) hitBox.enabled = true;
         yield return new WaitForSeconds(attackActiveTime);
         if (hitBox != null) hitBox.enabled = false;
 
+    }
+
+    protected IEnumerator ResetAttack()
+    {
         yield return new WaitForSeconds(Mathf.Max(0f, attackTime - attackActiveTime));
         canAttack = true;
     }
