@@ -2,24 +2,15 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
-<<<<<<< HEAD
-public class CommonEnemy : MonoBehaviour 
-{
-    protected NavMeshAgent aI;
-    protected GameObject player;
-    protected bool gameOver;
-    public SphereCollider hitBox;
-    protected bool canAttack = true;
-    public float attackTime;
-=======
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Health))]
 public class CommonEnemy : MonoBehaviour
 {
-    private NavMeshAgent aI;
-    private GameObject player;
-    private Health health;
-    private Health playerHealth;
+    protected NavMeshAgent aI;
+    protected GameObject player;
+    protected Health health;
+    protected Health playerHealth;
+    protected bool gameOver;
 
     [Tooltip("Trigger collider with a Damage script on it (Target Tag = Player).")]
     public SphereCollider hitBox;
@@ -31,8 +22,8 @@ public class CommonEnemy : MonoBehaviour
     [Tooltip("How long the hitbox stays on during a swing.")]
     public float attackActiveTime = 0.2f;
 
-    private bool canAttack = true;
->>>>>>> main
+    protected bool canAttack = true;
+
 
     void Start()
     {
@@ -80,24 +71,20 @@ public class CommonEnemy : MonoBehaviour
         }
     }
 
-<<<<<<< HEAD
-    protected void OnTriggerEnter(Collider other)
-=======
+
     IEnumerator Swing()
->>>>>>> main
+
     {
         // Hitbox on for a short window, then off. The Damage script on the hitbox deals the damage.
         if (hitBox != null) hitBox.enabled = true;
         yield return new WaitForSeconds(attackActiveTime);
         if (hitBox != null) hitBox.enabled = false;
 
-<<<<<<< HEAD
+    }
+
     protected IEnumerator ResetAttack()
     {
-        yield return new WaitForSeconds(attackTime);
-=======
         yield return new WaitForSeconds(Mathf.Max(0f, attackTime - attackActiveTime));
->>>>>>> main
         canAttack = true;
     }
 
