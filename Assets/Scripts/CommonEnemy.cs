@@ -25,7 +25,7 @@ public class CommonEnemy : MonoBehaviour
     protected bool canAttack = true;
 
 
-    void Start()
+    protected virtual void Start()
     {
         aI = GetComponent<NavMeshAgent>();
         health = GetComponent<Health>();
@@ -33,17 +33,18 @@ public class CommonEnemy : MonoBehaviour
         if (player != null) playerHealth = player.GetComponent<Health>();
 
         if (hitBox != null) hitBox.enabled = false;
-        health.OnDied += HandleDeath;
+        if (health != null) health.OnDied += HandleDeath;
+        else Debug.LogWarning($"{name}: enemy has no Health component, so it can't be killed.");
     }
 
-    void OnDestroy()
+    protected virtual void OnDestroy()
     {
         if (health != null) health.OnDied -= HandleDeath;
     }
 
-    void Update()
+    protected virtual void Update()
     {
-        if (player == null || health.IsDead) return;
+        if (player == null || health == null || health.IsDead) return;
 
         // Stop chasing once the player is dead.
         if (playerHealth != null && playerHealth.IsDead)
@@ -54,6 +55,14 @@ public class CommonEnemy : MonoBehaviour
 
         FollowPlayer();
         Attacking();
+    }
+
+    /// <summary>Turns to face the player without tilting up or down.</summary>
+    protected void FacePlayer()
+    {
+        Vector3 target = player.transform.position;
+        target.y = transform.position.y;
+        transform.LookAt(target);
     }
 
     protected void FollowPlayer()
@@ -79,7 +88,7 @@ public class CommonEnemy : MonoBehaviour
         if (hitBox != null) hitBox.enabled = true;
         yield return new WaitForSeconds(attackActiveTime);
         if (hitBox != null) hitBox.enabled = false;
-
+        StartCoroutine(ResetAttack());
     }
 
     protected IEnumerator ResetAttack()
@@ -88,7 +97,7 @@ public class CommonEnemy : MonoBehaviour
         canAttack = true;
     }
 
-    void HandleDeath(GameObject killer)
+    protected virtual void HandleDeath(GameObject killer)
     {
         StopAllCoroutines();
         if (hitBox != null) hitBox.enabled = false;
