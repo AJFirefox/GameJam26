@@ -1,39 +1,15 @@
 fileFormatVersion: 2
-guid: 81b091fb80fa1584cb3e148fc5311d02
+guid: 25697f9e75ab4c547ab20905f540938b
 ModelImporter:
-  serializedVersion: 22200
+  serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Floor_Brick_Stone
-    second: {fileID: 2100000, guid: f48b7f9d4ce9f8d4584a8c04a7327488, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Floor_Brick_Stone_B
-    second: {fileID: 2100000, guid: 174f1504797833042bbf5fe9c2a710b6, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Ground_Soil
-    second: {fileID: 2100000, guid: 29d80d85ca8e34442883f6aea9baaf04, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Wall_Brick_Stone
-    second: {fileID: 2100000, guid: 2d136d308e4a3cc4d9359fb6398bcd23, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Wall_Concrete
-    second: {fileID: 2100000, guid: 1b49b7d2dfa5785408f463182a95732f, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
     materialSearch: 1
     materialLocation: 1
+    searchTexturesGlobally: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
@@ -81,6 +57,9 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
@@ -130,10 +109,3 @@ ModelImporter:
   userData: 
   assetBundleName: 
   assetBundleVariant: 
-AssetOrigin:
-  serializedVersion: 1
-  productId: 376424
-  packageName: Modular Arena
-  packageVersion: 1.0
-  assetPath: Assets/LoafbrrAssets/ModularArena/fbx/ModularArena.fbx
-  uploadId: 906406

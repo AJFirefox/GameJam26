@@ -2,6 +2,16 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
 
+<<<<<<< HEAD
+public class CommonEnemy : MonoBehaviour 
+{
+    protected NavMeshAgent aI;
+    protected GameObject player;
+    protected bool gameOver;
+    public SphereCollider hitBox;
+    protected bool canAttack = true;
+    public float attackTime;
+=======
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Health))]
 public class CommonEnemy : MonoBehaviour
@@ -22,6 +32,7 @@ public class CommonEnemy : MonoBehaviour
     public float attackActiveTime = 0.2f;
 
     private bool canAttack = true;
+>>>>>>> main
 
     void Start()
     {
@@ -54,12 +65,12 @@ public class CommonEnemy : MonoBehaviour
         Attacking();
     }
 
-    void FollowPlayer()
+    protected void FollowPlayer()
     {
         if (aI.isOnNavMesh) aI.SetDestination(player.transform.position);
     }
 
-    void Attacking()
+    protected virtual void Attacking()
     {
         float distance = Vector3.Distance(transform.position, player.transform.position);
         if (distance <= attackRange && canAttack)
@@ -69,14 +80,24 @@ public class CommonEnemy : MonoBehaviour
         }
     }
 
+<<<<<<< HEAD
+    protected void OnTriggerEnter(Collider other)
+=======
     IEnumerator Swing()
+>>>>>>> main
     {
         // Hitbox on for a short window, then off. The Damage script on the hitbox deals the damage.
         if (hitBox != null) hitBox.enabled = true;
         yield return new WaitForSeconds(attackActiveTime);
         if (hitBox != null) hitBox.enabled = false;
 
+<<<<<<< HEAD
+    protected IEnumerator ResetAttack()
+    {
+        yield return new WaitForSeconds(attackTime);
+=======
         yield return new WaitForSeconds(Mathf.Max(0f, attackTime - attackActiveTime));
+>>>>>>> main
         canAttack = true;
     }
 
