@@ -24,6 +24,10 @@ public class CommonEnemy : MonoBehaviour
 
     protected bool canAttack = true;
 
+    /// <summary>Turned to stone (Snake Eyes). Can't move or attack.</summary>
+    public bool IsPetrified { get; private set; }
+    private Coroutine knockbackRoutine;
+
 
     protected virtual void Start()
     {
@@ -44,7 +48,7 @@ public class CommonEnemy : MonoBehaviour
 
     protected virtual void Update()
     {
-        if (player == null || health == null || health.IsDead) return;
+        if (player == null || health == null || health.IsDead || IsPetrified) return;
 
         // Stop chasing once the player is dead.
         if (playerHealth != null && playerHealth.IsDead)
@@ -95,6 +99,49 @@ public class CommonEnemy : MonoBehaviour
     {
         yield return new WaitForSeconds(Mathf.Max(0f, attackTime - attackActiveTime));
         canAttack = true;
+    }
+
+    /// <summary>Turns the enemy to stone (or back). Stops all attacks and movement while on.</summary>
+    public virtual void SetPetrified(bool on)
+    {
+        if (IsPetrified == on) return;
+        IsPetrified = on;
+        if (aI == null) aI = GetComponent<NavMeshAgent>();
+
+        if (on)
+        {
+            StopAllCoroutines();
+            knockbackRoutine = null;
+            if (hitBox != null) hitBox.enabled = false;
+            foreach (Damage d in GetComponentsInChildren<Damage>(true)) d.Deactivate();
+            if (aI != null && aI.isOnNavMesh) { aI.isStopped = true; aI.velocity = Vector3.zero; }
+        }
+        else
+        {
+            canAttack = true;
+            if (aI != null && aI.isOnNavMesh && (health == null || !health.IsDead)) aI.isStopped = false;
+        }
+    }
+
+    /// <summary>Shoves the enemy along the ground (stays on the NavMesh, stops at walls).</summary>
+    public void Knockback(Vector3 velocity, float duration)
+    {
+        if (!isActiveAndEnabled || IsPetrified) return;
+        if (knockbackRoutine != null) StopCoroutine(knockbackRoutine);
+        knockbackRoutine = StartCoroutine(KnockbackRoutine(velocity, duration));
+    }
+
+    private IEnumerator KnockbackRoutine(Vector3 velocity, float duration)
+    {
+        if (aI == null) aI = GetComponent<NavMeshAgent>();
+        velocity.y = 0f;
+        for (float t = 0f; t < duration; t += Time.deltaTime)
+        {
+            float k = 1f - t / duration;
+            if (aI != null && aI.isOnNavMesh) aI.Move(velocity * k * Time.deltaTime);
+            yield return null;
+        }
+        knockbackRoutine = null;
     }
 
     /// <summary>

@@ -43,6 +43,8 @@ public class Health : MonoBehaviour
     public event Action<GameObject> OnDied;
     /// <summary>Fires when anything dies. (what died, who killed it, may be null).</summary>
     public static event Action<Health, GameObject> OnAnyDeath;
+    /// <summary>Fires when anything takes damage. (what was hit, amount taken, who dealt it). Used for lifesteal.</summary>
+    public static event Action<Health, float, GameObject> OnAnyDamaged;
 
     /// <summary>Set true while rolling, during cutscenes, etc.</summary>
     public bool IsInvulnerable { get; set; }
@@ -79,6 +81,7 @@ public class Health : MonoBehaviour
         if (invulnerabilityAfterHit > 0f) invulnerableUntil = Time.time + invulnerabilityAfterHit;
 
         OnDamaged?.Invoke(taken, source);
+        OnAnyDamaged?.Invoke(this, taken, source);
         onDamaged?.Invoke();
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 

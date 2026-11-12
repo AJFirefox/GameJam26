@@ -31,7 +31,7 @@ public class Cyclops : CommonEnemy
 
     protected override void Update()
     {
-        if (player == null || health == null || health.IsDead) return;
+        if (player == null || health == null || health.IsDead || IsPetrified) return;
         if (playerHealth != null && playerHealth.IsDead)
         {
             if (aI.isOnNavMesh) aI.isStopped = true;

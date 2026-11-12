@@ -120,7 +120,7 @@ public class Minotaur : CommonEnemy
 
     protected override void Update()
     {
-        if (player == null || health == null || health.IsDead) return;
+        if (player == null || health == null || health.IsDead || IsPetrified) return;
 
         if (playerHealth != null && playerHealth.IsDead)
         {
@@ -291,6 +291,19 @@ public class Minotaur : CommonEnemy
         onEnrage?.Invoke();
         Trigger("Enrage");
         Debug.Log($"{bossName} is enraged!");
+    }
+
+    // ======================================================================
+    // Stone (Snake Eyes)
+    // ======================================================================
+
+    public override void SetPetrified(bool on)
+    {
+        base.SetPetrified(on);   // stops coroutines, hitboxes off, agent stopped
+        if (dashHitBox != null) dashHitBox.enabled = false;
+        SetLean(0f);
+        busy = false;
+        if (!on && aI != null) aI.updateRotation = true;
     }
 
     // ======================================================================

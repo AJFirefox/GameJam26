@@ -55,11 +55,15 @@ public class WeaponLoadout : MonoBehaviour
     {
         if (!IsUnlocked(index)) return false;
 
+        // Clear the ammo counter first; ranged weapons show their own when they switch on
+        if (GameHUD.Instance != null) GameHUD.Instance.SetAmmo(null);
+
         for (int i = 0; i < slots.Length; i++)
-            if (slots[i].weaponObject != null) slots[i].weaponObject.SetActive(i == index);
+            if (slots[i].weaponObject != null && i != index) slots[i].weaponObject.SetActive(false);
+        slots[index].weaponObject.SetActive(false);   // off/on so it always runs its equip setup
+        slots[index].weaponObject.SetActive(true);
 
         CurrentIndex = index;
-        if (GameHUD.Instance != null) GameHUD.Instance.SetAmmo(null);   // ranged weapons set their own ammo when they wake up
         OnWeaponChanged?.Invoke(index);
         return true;
     }

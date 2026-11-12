@@ -25,6 +25,8 @@ public class BoonManager : MonoBehaviour
         public bool filler;
         /// <summary>Needs the player to pick a Lucky Number after choosing it.</summary>
         public bool needsNumberPick;
+        /// <summary>Only offered once this WeaponLoadout slot is unlocked (-1 = always). 0 sword, 1 hammer, 2 pistol, 3 coins.</summary>
+        public int requiresWeapon = -1;
         public Action apply;
     }
 
@@ -45,9 +47,8 @@ public class BoonManager : MonoBehaviour
     private readonly List<Boon> allBoons = new List<Boon>();
     private readonly List<Boon> owned = new List<Boon>();
     private GameObject player;
-    private PlayerMovement movement;
     private Health playerHealth;
-    private float baseMoveSpeedMultiplier = 1f;
+    private WeaponLoadout loadout;
 
     // ======================================================================
     // Setup
@@ -65,9 +66,8 @@ public class BoonManager : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
-            movement = player.GetComponent<PlayerMovement>();
             playerHealth = player.GetComponent<Health>();
-            if (movement != null) baseMoveSpeedMultiplier = movement.speedMultiplier;
+            loadout = player.GetComponent<WeaponLoadout>();
         }
     }
 
@@ -117,6 +117,43 @@ public class BoonManager : MonoBehaviour
             apply = () => { },   // handled in HandleRoll
         });
 
+        // ---------- Weapon boons (only offered once that weapon is unlocked) ----------
+        allBoons.Add(new Boon
+        {
+            id = "let_it_ride", name = "Let It Ride", god = "Tyche",
+            description = "Fortune's Edge: your combo carries from enemy to enemy instead of restarting.",
+            requiresWeapon = 0,
+            apply = () =>
+            {
+                if (player != null)
+                    foreach (FortunesEdge s in player.GetComponentsInChildren<FortunesEdge>(true)) s.letItRide = true;
+            },
+        });
+
+        allBoons.Add(new Boon
+        {
+            id = "rigged_machine", name = "Rigged Machine", god = "Hephaestus",
+            description = "The Jackpot: all three reels always land on the same god. Triple effect, every time.",
+            requiresWeapon = 1,
+            apply = () => { },   // JackpotHammer checks for it
+        });
+
+        allBoons.Add(new Boon
+        {
+            id = "medusa_gaze", name = "Gaze", god = "Medusa",
+            description = "Snake Eyes: any double turns enemies to stone, not just snake eyes.",
+            requiresWeapon = 2,
+            apply = () => { },   // SnakeEyesPistol checks for it
+        });
+
+        allBoons.Add(new Boon
+        {
+            id = "two_headed_coin", name = "Two-Headed Coin", god = "Janus",
+            description = "Heads or Tails: every coin lands heads. Every coin explodes.",
+            requiresWeapon = 3,
+            apply = () => { },   // CoinProjectile checks for it
+        });
+
         // Filler: offered when there aren't 3 real boons left to choose from
         allBoons.Add(new Boon
         {
@@ -139,7 +176,7 @@ public class BoonManager : MonoBehaviour
     /// <summary>Picks up to `count` different boons the player can still take. Fills with Ambrosia if needed.</summary>
     public List<Boon> GetOffer(int count)
     {
-        List<Boon> pool = allBoons.FindAll(b => !b.filler && (b.repeatable || !Has(b.id)));
+        List<Boon> pool = allBoons.FindAll(b => !b.filler && (b.repeatable || !Has(b.id)) && WeaponAvailable(b));
         List<Boon> offer = new List<Boon>();
 
         while (offer.Count < count && pool.Count > 0)
@@ -152,6 +189,13 @@ public class BoonManager : MonoBehaviour
         Boon filler = allBoons.Find(b => b.filler);
         if (offer.Count < count && filler != null) offer.Add(filler);
         return offer;
+    }
+
+    private bool WeaponAvailable(Boon b)
+    {
+        if (b.requiresWeapon < 0) return true;
+        if (loadout == null && player != null) loadout = player.GetComponent<WeaponLoadout>();
+        return loadout != null && loadout.IsUnlocked(b.requiresWeapon);
     }
 
     /// <summary>Gives the player a boon and applies it.</summary>
@@ -179,9 +223,7 @@ public class BoonManager : MonoBehaviour
         BloodlustStacks = stacks;
 
         float mult = 1f + bloodlustSpeedPerStack * BloodlustStacks;
-        if (movement != null) movement.speedMultiplier = baseMoveSpeedMultiplier * mult;
-        if (player != null)
-            foreach (WeaponBase w in player.GetComponentsInChildren<WeaponBase>(true))
-                w.attackSpeedMultiplier = mult;
+        PlayerBuffs buffs = PlayerBuffs.Get(player);
+        if (buffs != null) buffs.SetAresMultiplier(mult);
     }
 }
