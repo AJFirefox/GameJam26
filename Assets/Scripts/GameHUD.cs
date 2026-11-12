@@ -40,7 +40,7 @@ public class GameHUD : MonoBehaviour
     private Canvas canvas;
     private Bar healthBar, staminaBar, favorBar, bossBar;
     private Text healthText, waveText, diceText, tierText, luckyText, bonusText, favorLabel;
-    private Text ammoText, bossNameText, boonText;
+    private Text ammoText, bossNameText, boonText, foresightText;
     private CanvasGroup diceGroup, bossGroup, boonGroup;
     private Image damageFlash;
 
@@ -225,6 +225,9 @@ public class GameHUD : MonoBehaviour
         ammoText.text = ammo ?? "";
     }
 
+    /// <summary>Athena's foresight: shows upcoming rolls under the Lucky Number. Pass null to hide.</summary>
+    public void SetForesight(string text) => foresightText.text = text ?? "";
+
     /// <summary>Shows the boss bar and name, and tracks the boss's Health.</summary>
     public void ShowBoss(Health boss, string bossName)
     {
@@ -380,6 +383,8 @@ public class GameHUD : MonoBehaviour
         Place(luckyText.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -50), new Vector2(0, 24), true);
         bonusText = MakeText("Roll Bonus", favor, "", 18, staminaColor, TextAnchor.MiddleCenter);
         Place(bonusText.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -72), new Vector2(0, 22), true);
+        foresightText = MakeText("Foresight", favor, "", 18, strongColor, TextAnchor.MiddleCenter);
+        Place(foresightText.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, -96), new Vector2(0, 22), true);
 
         // ---- Bottom right: ammo (hidden by default) ----
         ammoText = MakeText("Ammo", root, "", 44, marble, TextAnchor.LowerRight);

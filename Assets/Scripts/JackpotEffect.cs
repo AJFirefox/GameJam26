@@ -95,6 +95,14 @@ public class JackpotEffect : MonoBehaviour
         }
     }
 
+    /// <summary>Just a camera shake, for heavy hits and landings. Strength in metres.</summary>
+    public void ShakeOnly(float strength)
+    {
+        if (shakeTarget == null) return;
+        if (shakeRoutine != null) StopCoroutine(shakeRoutine);
+        shakeRoutine = StartCoroutine(Shake(strength));
+    }
+
     // ---------- Pieces ----------
 
     private IEnumerator Flash(float strength)

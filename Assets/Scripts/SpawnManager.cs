@@ -36,6 +36,14 @@ public class SpawnManager : MonoBehaviour
     public Transform[] spawnPoints;
     [Tooltip("Spawn points closer than this to the player are skipped (if there are others).")]
     public float minSpawnDistanceFromPlayer = 8f;
+    [Tooltip("How far around each spawn point to look for floor at the player's level.")]
+    public float groundSearchRadius = 4f;
+    [Tooltip("A spawn spot more than this far above/below the player's floor is ignored (e.g. the top of a wall).")]
+    public float maxHeightDifference = 1.5f;
+    [Tooltip("If a spawn point is cut off from the arena, step inward this far at a time looking for connected floor.")]
+    public float inwardStep = 1f;
+    [Tooltip("The furthest inward a spawn can be moved.")]
+    public float maxInwardDistance = 15f;
 
     [Header("Wave Settings")]
     [Tooltip("How many enemies spawn in wave 1.")]
@@ -202,8 +210,7 @@ public class SpawnManager : MonoBehaviour
         Transform point = at != null ? at : PickSpawnPoint(false);
         Vector3 pos = point.position;
 
-        // Snap onto the NavMesh so the agent doesn't complain
-        if (NavMesh.SamplePosition(pos, out NavMeshHit hit, 5f, NavMesh.AllAreas)) pos = hit.position;
+        pos = GroundLevelSpawn(pos, point.name);
 
         Quaternion facing = player != null
             ? Quaternion.LookRotation(Vector3.ProjectOnPlane(player.position - pos, Vector3.up).normalized + Vector3.forward * 0.0001f)
@@ -262,6 +269,81 @@ public class SpawnManager : MonoBehaviour
 
         if (farEnough.Count == 0) return spawnPoints[Random.Range(0, spawnPoints.Length)];
         return farEnough[Random.Range(0, farEnough.Count)];
+    }
+
+    /// <summary>
+    /// Finds the floor under a spawn point at the same height as the player's floor, so enemies
+    /// appear in the doorway and not on top of the wall above it.
+    /// </summary>
+    private Vector3 GroundLevelSpawn(Vector3 spawnPos, string pointName)
+    {
+        float floorY = PlayerFloorY(spawnPos.y);
+        Vector3 center = ArenaCenter();
+        Vector3 start = new Vector3(spawnPos.x, floorY, spawnPos.z);
+        Vector3 inwardTarget = new Vector3(center.x, floorY, center.z);
+
+        // Try the spawn point, then step inward toward the middle of the arena until the floor
+        // there is at the player's level AND connected to where the player is.
+        for (float inward = 0f; inward <= maxInwardDistance; inward += inwardStep)
+        {
+            Vector3 probe = Vector3.MoveTowards(start, inwardTarget, inward);
+            if (NavMesh.SamplePosition(probe, out NavMeshHit hit, groundSearchRadius, NavMesh.AllAreas)
+                && Mathf.Abs(hit.position.y - floorY) <= maxHeightDifference
+                && CanReachPlayer(hit.position))
+            {
+                if (inward > 0f && !warnedPoints.Contains(pointName))
+                {
+                    warnedPoints.Add(pointName);
+                    Debug.Log($"SpawnManager: {pointName} was cut off from the arena, so enemies spawn {inward:0.#} m further in. " +
+                              "Move it inward in the scene if you want them to appear right in the doorway.");
+                }
+                return hit.position;
+            }
+        }
+
+        // Last resort: anywhere near, still preferring the player's level
+        if (NavMesh.SamplePosition(start, out NavMeshHit any, 25f, NavMesh.AllAreas)) return any.position;
+
+        Debug.LogWarning($"SpawnManager: no NavMesh near {pointName}. Bake the NavMesh, or move the spawn point into the doorway.");
+        return spawnPos;
+    }
+
+    /// <summary>Height of the floor the player is standing on (ignores the player's own colliders).</summary>
+    private float PlayerFloorY(float fallback)
+    {
+        if (player == null) return fallback;
+        RaycastHit[] hits = Physics.RaycastAll(player.position + Vector3.up * 0.5f, Vector3.down, 10f, ~0, QueryTriggerInteraction.Ignore);
+        float best = float.MaxValue;
+        float y = lastPlayerFloorY ?? player.position.y;
+        foreach (RaycastHit h in hits)
+        {
+            if (h.collider.transform.root == player.root) continue;
+            if (h.distance < best) { best = h.distance; y = h.point.y; }
+        }
+        lastPlayerFloorY = y;
+        return y;
+    }
+
+    private float? lastPlayerFloorY;
+    private NavMeshPath reachPath;
+    private readonly HashSet<string> warnedPoints = new HashSet<string>();
+
+    /// <summary>True if an enemy standing here could walk to the player.</summary>
+    private bool CanReachPlayer(Vector3 from)
+    {
+        if (player == null) return true;
+        if (!NavMesh.SamplePosition(player.position, out NavMeshHit playerHit, 3f, NavMesh.AllAreas)) return true;  // can't tell, allow
+        if (reachPath == null) reachPath = new NavMeshPath();
+        return NavMesh.CalculatePath(from, playerHit.position, NavMesh.AllAreas, reachPath)
+               && reachPath.status == NavMeshPathStatus.PathComplete;
+    }
+
+    /// <summary>Middle of the arena: the average of the spawn points.</summary>
+    private Vector3 ArenaCenter()
+    {
+        Vector3 sum = Vector3.zero;
+        foreach (Transform t in spawnPoints) sum += t.position;
+        return sum / spawnPoints.Length;
     }
 
     private bool PlayerDead() => playerHealth != null && playerHealth.IsDead;
