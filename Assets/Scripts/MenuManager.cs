@@ -10,9 +10,9 @@ public class MenuManager : MonoBehaviour
     }
 
 
-    public void QuitGame()
+    public void QuitToGameMenu()
     {
-        
+        SceneManager.LoadScene("DrakesAWESOMEScene");
     }
 
     public void ReplayGame() 

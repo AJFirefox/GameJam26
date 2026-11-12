@@ -32,7 +32,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ColorTexture:
-        m_Texture: {fileID: 2800000, guid: e0e4674fe7034794388f0824ccce5f7e, type: 3}
+        m_Texture: {fileID: 2800000, guid: 877bdb956640bd447b978d2168182f92, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _EmissionTexture:
@@ -44,11 +44,11 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _NormalMapTexture:
-        m_Texture: {fileID: 2800000, guid: 2048342f91047f6428bcb12d6172a929, type: 3}
+        m_Texture: {fileID: 2800000, guid: b4eaa4ecd29cdfa4ab2799e72904a5f3, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ORM:
-        m_Texture: {fileID: 2800000, guid: 499f0eb99e1b3404da67e5e6e23fbd4f, type: 3}
+        m_Texture: {fileID: 2800000, guid: de0505aa6c242fb418124439952525c1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
