@@ -232,6 +232,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &491370361
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 491370362}
+  m_Layer: 0
+  m_Name: Boulder Spawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &491370362
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 491370361}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.985, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 629277409}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &629277403
 GameObject:
   m_ObjectHideFlags: 0
@@ -245,8 +276,8 @@ GameObject:
   - component: {fileID: 629277407}
   - component: {fileID: 629277406}
   - component: {fileID: 629277405}
-  - component: {fileID: 629277404}
   - component: {fileID: 629277410}
+  - component: {fileID: 629277411}
   m_Layer: 0
   m_Name: Cyclops
   m_TagString: Untagged
@@ -254,27 +285,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!135 &629277404
-SphereCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 629277403}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 3
-  m_Radius: 1
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!195 &629277405
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -389,7 +399,8 @@ Transform:
   m_LocalPosition: {x: 16, y: 2.18, z: -4.79}
   m_LocalScale: {x: 1, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 491370362}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -68.146, z: 0}
 --- !u!114 &629277410
@@ -404,10 +415,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5522091a8b48aa4d8eeb580d7242121, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Cyclops
-  hitBox: {fileID: 629277404}
+  hitBox: {fileID: 0}
+  attackRange: 2
   attackTime: 3
+  attackActiveTime: 0.2
   boulder: {fileID: 8732259519446761155, guid: c8d186a22198fc7448bee7d0055b68c5, type: 3}
   throwForce: 30
+  bSpawnPos: {fileID: 491370362}
+--- !u!114 &629277411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 629277403}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561fdf4f576a1184cb863658366da4eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHealth: 100
+  currentHealth: 0
+  invulnerabilityAfterHit: 0
+  damageTakenMultiplier: 1
+  destroyOnDeath: 1
+  destroyDelay: 0
+  onDamaged:
+    m_PersistentCalls:
+      m_Calls: []
+  onHealed:
+    m_PersistentCalls:
+      m_Calls: []
+  onDeath:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &886675221
 GameObject:
   m_ObjectHideFlags: 0
@@ -697,6 +738,8 @@ MonoBehaviour:
   rollSpeed: 14
   rollDuration: 0.35
   mouseSensitivity: 2
+  rollGivesInvulnerability: 1
+  speedMultiplier: 1
 --- !u!1 &1753885256
 GameObject:
   m_ObjectHideFlags: 0
@@ -913,6 +956,7 @@ GameObject:
   - component: {fileID: 2004794064}
   - component: {fileID: 2004794065}
   - component: {fileID: 2004794066}
+  - component: {fileID: 2004794067}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -1028,7 +1072,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CommonEnemy
   hitBox: {fileID: 2004794066}
+  attackRange: 2
   attackTime: 1
+  attackActiveTime: 0.2
 --- !u!195 &2004794065
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -1072,6 +1118,33 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 1
   m_Center: {x: 0, y: 0, z: 1}
+--- !u!114 &2004794067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2004794058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 561fdf4f576a1184cb863658366da4eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Health
+  maxHealth: 100
+  currentHealth: 0
+  invulnerabilityAfterHit: 0
+  damageTakenMultiplier: 1
+  destroyOnDeath: 1
+  destroyDelay: 0
+  onDamaged:
+    m_PersistentCalls:
+      m_Calls: []
+  onHealed:
+    m_PersistentCalls:
+      m_Calls: []
+  onDeath:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
