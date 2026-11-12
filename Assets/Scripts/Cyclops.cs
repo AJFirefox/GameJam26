@@ -23,6 +23,12 @@ public class Cyclops : CommonEnemy
         if (boulder == null) Debug.LogWarning($"{name}: Cyclops has no boulder prefab assigned.");
     }
 
+    public override void ApplyWaveScaling(float healthMultiplier, float damageMultiplier)
+    {
+        base.ApplyWaveScaling(healthMultiplier, damageMultiplier);
+        boulderDamage *= damageMultiplier;
+    }
+
     protected override void Update()
     {
         if (player == null || health == null || health.IsDead) return;

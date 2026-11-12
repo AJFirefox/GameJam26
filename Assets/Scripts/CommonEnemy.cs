@@ -97,6 +97,19 @@ public class CommonEnemy : MonoBehaviour
         canAttack = true;
     }
 
+    /// <summary>
+    /// Called by the SpawnManager right after spawning, to make later waves tougher.
+    /// 1 = normal. Scales max health and every Damage hitbox on this enemy.
+    /// </summary>
+    public virtual void ApplyWaveScaling(float healthMultiplier, float damageMultiplier)
+    {
+        Health h = GetComponent<Health>();
+        if (h != null) h.ResetHealth(h.maxHealth * healthMultiplier);
+
+        foreach (Damage d in GetComponentsInChildren<Damage>(true))
+            d.damageAmount *= damageMultiplier;
+    }
+
     protected virtual void HandleDeath(GameObject killer)
     {
         StopAllCoroutines();
