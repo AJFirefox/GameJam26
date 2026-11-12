@@ -363,6 +363,7 @@ GameObject:
   - component: {fileID: 552835719}
   - component: {fileID: 552835718}
   - component: {fileID: 552835720}
+  - component: {fileID: 552835721}
   m_Layer: 0
   m_Name: LuckSystem
   m_TagString: Untagged
@@ -432,6 +433,21 @@ MonoBehaviour:
   coinClip: {fileID: 8300000, guid: ebc1da7df43a818449bbe191a566fc30, type: 3}
   volume: 0.8
   halfJackpotStrength: 0.4
+--- !u!114 &552835721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 552835717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 769756d2cda887c469f142564411c83c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BoonManager
+  bloodlustSpeedPerStack: 0.12
+  bloodlustMaxStacks: 4
+  ambrosiaHealFraction: 0.4
 --- !u!1001 &599903983
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -546,6 +562,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7094620311760461776, guid: d795ecf62053eb745964b087aeb03184, type: 3}
       insertIndex: -1
       addedObject: {fileID: 599903991}
+    - targetCorrespondingSourceObject: {fileID: 7094620311760461776, guid: d795ecf62053eb745964b087aeb03184, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 599903992}
   m_SourcePrefab: {fileID: 100100000, guid: d795ecf62053eb745964b087aeb03184, type: 3}
 --- !u!1 &599903984 stripped
 GameObject:
@@ -670,6 +689,35 @@ MonoBehaviour:
   regenPerSecond: 35
   regenDelay: 0.6
   rollCost: 30
+--- !u!114 &599903992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 599903984}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16b5b434745c84741b91a44d20d068d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponLoadout
+  slots:
+  - name: Fortune's Edge
+    description: Fast broadsword. 3-hit combo, lunge on hit 3. Jackpot on hit 3 fires
+      a cleave wave.
+    weaponObject: {fileID: 0}
+  - name: The Jackpot
+    description: Slow war hammer. Jackpots spin 3 god reels for chain lightning,
+      shockwaves, lifesteal and more.
+    weaponObject: {fileID: 0}
+  - name: Snake Eyes
+    description: Hitscan pistol. Snake eyes turns enemies to stone; stone takes double
+      damage.
+    weaponObject: {fileID: 0}
+  - name: Heads or Tails
+    description: Coin launcher. Coins explode, ricochet and drop ammo or health.
+    weaponObject: {fileID: 0}
+  startingSlot: 0
 --- !u!1 &906137218
 GameObject:
   m_ObjectHideFlags: 0
@@ -715,15 +763,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnManager
   enemyPrefab: {fileID: 165424, guid: 9f4313a771e05c64d8da7ae6bd19a19f, type: 3}
+  extraEnemies: []
   spawnPoints:
   - {fileID: 1326834107}
   - {fileID: 1502359980}
   - {fileID: 1555925623}
   - {fileID: 1055453411}
+  minSpawnDistanceFromPlayer: 8
   startingEnemyCount: 3
   enemiesAddedPerWave: 2
+  maxEnemiesPerWave: 30
   timeBetweenSpawns: 0.5
   timeBetweenWaves: 3
+  firstWaveDelay: 2
+  healthIncreasePerWave: 0.08
+  damageIncreasePerWave: 0.05
+  bossPrefab: {fileID: 165424, guid: 48fa6029ae5c4aa1b2ba90d090cfe27c, type: 3}
+  bossName: The Minotaur
+  bossEvery: 5
+  bossSpawnPoint: {fileID: 0}
+  bossWaveExtraEnemies: 0
+  bossHealthIncreasePerAppearance: 0.5
 --- !u!1 &1055453407
 GameObject:
   m_ObjectHideFlags: 0
@@ -1591,6 +1651,54 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1710061488
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1710061490}
+  - component: {fileID: 1710061489}
+  m_Layer: 0
+  m_Name: GameOver
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1710061489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1710061488}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c2abf0760f609b4582ce9e57b02a24e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameOverManager
+  mainMenuScene: DrakesAWESOMEScene
+  delay: 1.2
+  pointsPerWave: 100
+  pointsPerJackpot: 10
+--- !u!4 &1710061490
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1710061488}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.22209, y: 0.00002, z: 10.18471}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1987920941 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2225711866513741779, guid: 2c84414c42157a244b6a9494279c361e, type: 3}
@@ -1649,6 +1757,59 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 52, y: 0.2, z: 52}
   m_Center: {x: 0, y: -0.28, z: 0}
+--- !u!1 &2098008536
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2098008538}
+  - component: {fileID: 2098008537}
+  m_Layer: 0
+  m_Name: Altar
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2098008537
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2098008536}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3e540c58c7f19e41be3030960164fab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AltarOfTyche
+  afterEveryWave: 1
+  boonChoices: 3
+  landingPoint: {fileID: 0}
+  dropHeight: 40
+  fallTime: 0.9
+  riseTime: 1.4
+  landingDelay: 1
+  altarPrefab: {fileID: 0}
+  interactRange: 4
+--- !u!4 &2098008538
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2098008536}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.22209, y: 0.00002, z: 10.18471}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1663,3 +1824,5 @@ SceneRoots:
   - {fileID: 599903983}
   - {fileID: 552835719}
   - {fileID: 1641482066}
+  - {fileID: 2098008538}
+  - {fileID: 1710061490}
