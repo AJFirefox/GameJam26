@@ -284,7 +284,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!195 &629277405
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -422,6 +422,9 @@ MonoBehaviour:
   boulder: {fileID: 8732259519446761155, guid: c8d186a22198fc7448bee7d0055b68c5, type: 3}
   throwForce: 30
   bSpawnPos: {fileID: 491370362}
+  throwRange: 15
+  preferredDistance: 10
+  boulderDamage: 15
 --- !u!114 &629277411
 MonoBehaviour:
   m_ObjectHideFlags: 0
