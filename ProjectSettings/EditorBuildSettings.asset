@@ -11,6 +11,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/AustinBCooking.unity
     guid: 9f70f7b19d29b5d499fe2ee8c24e9d3f
+  - enabled: 1
+    path: Assets/Scenes/GameOverBrah.unity
+    guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
