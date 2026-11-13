@@ -128,6 +128,7 @@ public class Minotaur : CommonEnemy
             return;
         }
 
+        UpdateAnimatorSpeed();
         if (busy) return;
 
         float distance = FlatDistanceToPlayer();
@@ -164,6 +165,7 @@ public class Minotaur : CommonEnemy
             // Wind up: lean back while turning to face the player
             onSwingWindup?.Invoke();
             Trigger("SwingWindup");
+            PlayAttackAnimation();
             float windup = swingWindup / Speed;
             for (float t = 0f; t < windup; t += Time.deltaTime)
             {

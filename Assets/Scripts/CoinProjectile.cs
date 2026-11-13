@@ -154,6 +154,7 @@ public class CoinProjectile : MonoBehaviour
             foreach (Collider c in v.GetComponentsInChildren<Collider>()) Destroy(c);
             foreach (Rigidbody rb in v.GetComponentsInChildren<Rigidbody>()) Destroy(rb);
             v.transform.localScale *= scale;
+            WeaponSkin.ApplyAll(v, "Gold");
         }
         else
         {
