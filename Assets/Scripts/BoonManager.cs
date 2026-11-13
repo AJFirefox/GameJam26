@@ -35,8 +35,9 @@ public class BoonManager : MonoBehaviour
     public float bloodlustSpeedPerStack = 0.12f;
     public int bloodlustMaxStacks = 4;
 
-    [Header("Ambrosia (filler heal)")]
-    [Range(0f, 1f)] public float ambrosiaHealFraction = 0.4f;
+    [Header("Ambrosia")]
+    [Tooltip("Max health added each time Ambrosia is taken. 0.15 = +15%, and it stacks.")]
+    [Range(0f, 1f)] public float ambrosiaMaxHealthBonus = 0.15f;
 
     /// <summary>Fires when the player gains a boon.</summary>
     public event Action<Boon> OnBoonGained;
@@ -154,15 +155,15 @@ public class BoonManager : MonoBehaviour
             apply = () => { },   // CoinProjectile checks for it
         });
 
-        // Filler: offered when there aren't 3 real boons left to choose from
+        // Repeatable: can be offered at any altar, and stacks every time you take it
         allBoons.Add(new Boon
         {
             id = "ambrosia", name = "Ambrosia", god = "Olympus",
-            description = "Restore 40% of your health.",
-            repeatable = true, filler = true,
+            description = "Food of the gods. +15% max health. Stacks every time you take it.",
+            repeatable = true,
             apply = () =>
             {
-                if (playerHealth != null) playerHealth.Heal(playerHealth.maxHealth * ambrosiaHealFraction);
+                if (playerHealth != null) playerHealth.IncreaseMaxHealth(ambrosiaMaxHealthBonus);
             },
         });
     }
@@ -203,7 +204,7 @@ public class BoonManager : MonoBehaviour
     {
         if (boon == null) return;
         boon.apply?.Invoke();
-        if (!boon.filler) owned.Add(boon);
+        owned.Add(boon);   // repeatable boons (Ambrosia) are listed once per time taken
 
         OnBoonGained?.Invoke(boon);
         if (GameHUD.Instance != null) GameHUD.Instance.ShowBoon($"{boon.god}: {boon.name}", boon.description);

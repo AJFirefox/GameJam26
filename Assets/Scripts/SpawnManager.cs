@@ -77,6 +77,12 @@ public class SpawnManager : MonoBehaviour
     [Tooltip("Extra boss health each time it comes back. 0.5 = +50% on its 2nd appearance, +100% on its 3rd.")]
     public float bossHealthIncreasePerAppearance = 0.5f;
 
+    [Header("Healing")]
+    [Tooltip("Fraction of max health restored when a normal wave is cleared. 0.2 = 20%.")]
+    [Range(0f, 1f)] public float waveClearHeal = 0.2f;
+    [Tooltip("Killing a boss restores the player to full health.")]
+    public bool bossKillFullHeal = true;
+
     // ---------- Events ----------
     public event Action<int, bool> OnWaveStarted;     // (wave, isBossWave)
     public event Action<int> OnWaveCleared;           // (wave)
@@ -174,6 +180,14 @@ public class SpawnManager : MonoBehaviour
             WavesCleared++;
             IsBetweenWaves = true;
             Debug.Log($"Wave {CurrentWave} cleared!");
+
+            // Boss waves already healed to full when the boss died
+            if (!IsBossWave && playerHealth != null && waveClearHeal > 0f)
+            {
+                float healed = playerHealth.Heal(playerHealth.maxHealth * waveClearHeal);
+                if (healed > 0f && GameHUD.Instance != null)
+                    GameHUD.Instance.ShowBoon("WAVE CLEARED", $"+{Mathf.RoundToInt(healed)} health", 2.5f);
+            }
             OnWaveCleared?.Invoke(CurrentWave);
 
             // Wait for the Altar (if it asked us to), then the normal breather
@@ -243,6 +257,18 @@ public class SpawnManager : MonoBehaviour
         if (m != null && !string.IsNullOrEmpty(m.bossName)) displayName = m.bossName;
 
         if (GameHUD.Instance != null && bossHealth != null) GameHUD.Instance.ShowBoss(bossHealth, displayName);
+
+        // Beating the boss heals the player to full
+        if (bossHealth != null && bossKillFullHeal)
+        {
+            string bossLabel = displayName;
+            bossHealth.OnDied += _ =>
+            {
+                if (playerHealth == null || playerHealth.IsDead) return;
+                playerHealth.Heal(playerHealth.maxHealth);
+                if (GameHUD.Instance != null) GameHUD.Instance.ShowBoon($"{bossLabel.ToUpper()} DEFEATED", "Health fully restored", 3f);
+            };
+        }
         OnBossSpawned?.Invoke(bossHealth);
     }
 

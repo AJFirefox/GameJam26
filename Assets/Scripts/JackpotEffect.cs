@@ -85,8 +85,8 @@ public class JackpotEffect : MonoBehaviour
             shakeRoutine = StartCoroutine(Shake(shakeStrength * strength));
         }
 
-        if (thunderClip != null) audioSource.PlayOneShot(thunderClip, volume * strength);
-        if (coinClip != null) audioSource.PlayOneShot(coinClip, volume * strength);
+        if (thunderClip != null) audioSource.PlayOneShot(thunderClip, volume * strength * VolumeSettings.Sfx);
+        if (coinClip != null) audioSource.PlayOneShot(coinClip, volume * strength * VolumeSettings.Sfx);
 
         if (withHitstop && hitstopDuration > 0f)
         {

@@ -4,11 +4,22 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>
-/// Game over: when the player dies, shows the score (waves cleared + Jackpots landed) with Restart and Main Menu.
+/// Game over: when the player dies, saves the score (waves cleared + Jackpots landed) and loads the
+/// game over scene (GameOverBrah). The run's stats are shown as a small line on that screen.
+/// Untick "Use Game Over Scene" to use the built-in overlay with Restart / Main Menu instead.
 /// Put this on an empty GameObject in the game scene.
 /// </summary>
 public class GameOverManager : MonoBehaviour
 {
+    [Header("Game over scene")]
+    [Tooltip("Load a separate game over scene instead of showing the overlay.")]
+    public bool useGameOverScene = true;
+    [Tooltip("Must be in File > Build Profiles > Scene List.")]
+    public string gameOverScene = "GameOverBrah";
+    [Tooltip("Show waves, Jackpots and score as a small line on the game over scene.")]
+    public bool showStatsOnGameOverScene = true;
+
+    [Header("Overlay (when not using the scene)")]
     [Tooltip("Scene loaded by the Main Menu button.")]
     public string mainMenuScene = "DrakesAWESOMEScene";
     [Tooltip("Seconds after death before the screen appears.")]
@@ -62,6 +73,25 @@ public class GameOverManager : MonoBehaviour
         int bestKey = PlayerPrefs.GetInt("BestScore", 0);
         bool newBest = score > bestKey;
         if (newBest) { PlayerPrefs.SetInt("BestScore", score); PlayerPrefs.Save(); }
+
+        // Save the run so the game over scene (or the menu) can show it
+        PlayerPrefs.SetInt("LastWaves", waves);
+        PlayerPrefs.SetInt("LastJackpots", jackpots);
+        PlayerPrefs.SetInt("LastScore", score);
+        PlayerPrefs.Save();
+
+        if (useGameOverScene && Application.CanStreamedLevelBeLoaded(gameOverScene))
+        {
+            Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            if (showStatsOnGameOverScene)
+                RunStatsLine.ShowAfterLoad(gameOverScene, waves, jackpots, score, newBest ? -1 : bestKey);
+            SceneManager.LoadScene(gameOverScene);
+            yield break;
+        }
+        if (useGameOverScene)
+            Debug.LogWarning($"GameOverManager: scene '{gameOverScene}' isn't in the build's scene list, so showing the overlay instead.");
 
         statsText.text =
             $"<size=26>Waves cleared</size>\n<size=44><b>{waves}</b></size>\n\n" +

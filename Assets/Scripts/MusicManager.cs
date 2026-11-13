@@ -48,7 +48,7 @@ public class MusicManager : MonoBehaviour
     {
         if (source.clip == null) return;
 
-        float target = volume;
+        float target = volume * VolumeSettings.Music;   // Settings > Music Volume
         if (playerHealth != null && playerHealth.IsDead) target *= deathVolume;
         else if (Time.timeScale <= 0.01f) target *= pausedVolume;
 

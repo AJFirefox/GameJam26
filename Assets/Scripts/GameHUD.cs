@@ -78,6 +78,7 @@ public class GameHUD : MonoBehaviour
 
         font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         BuildHUD();
+        if (GetComponent<PauseMenu>() == null) gameObject.AddComponent<PauseMenu>();
     }
 
     void OnDestroy()
