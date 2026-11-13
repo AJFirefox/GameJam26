@@ -23,15 +23,22 @@ public class Cyclops : CommonEnemy
         if (boulder == null) Debug.LogWarning($"{name}: Cyclops has no boulder prefab assigned.");
     }
 
+    public override void ApplyWaveScaling(float healthMultiplier, float damageMultiplier)
+    {
+        base.ApplyWaveScaling(healthMultiplier, damageMultiplier);
+        boulderDamage *= damageMultiplier;
+    }
+
     protected override void Update()
     {
-        if (player == null || health == null || health.IsDead) return;
+        if (player == null || health == null || health.IsDead || IsPetrified) return;
         if (playerHealth != null && playerHealth.IsDead)
         {
             if (aI.isOnNavMesh) aI.isStopped = true;
             return;
         }
 
+        UpdateAnimatorSpeed();
         float distance = Vector3.Distance(transform.position, player.transform.position);
 
         // Walk in until it's at a good throwing distance, then hold position
@@ -56,6 +63,7 @@ public class Cyclops : CommonEnemy
             // Aim at the player's chest, with a little arc
             Vector3 aim = (player.transform.position + Vector3.up - spawnPos).normalized + Vector3.up * 0.15f;
 
+            PlayAttackAnimation();
             GameObject projectile = Instantiate(boulder, spawnPos, Quaternion.identity);
             Rigidbody rb = projectile.GetComponent<Rigidbody>();
             if (rb != null) rb.AddForce(aim.normalized * throwForce, ForceMode.Impulse);

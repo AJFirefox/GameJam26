@@ -85,14 +85,22 @@ public class JackpotEffect : MonoBehaviour
             shakeRoutine = StartCoroutine(Shake(shakeStrength * strength));
         }
 
-        if (thunderClip != null) audioSource.PlayOneShot(thunderClip, volume * strength);
-        if (coinClip != null) audioSource.PlayOneShot(coinClip, volume * strength);
+        if (thunderClip != null) audioSource.PlayOneShot(thunderClip, volume * strength * VolumeSettings.Sfx);
+        if (coinClip != null) audioSource.PlayOneShot(coinClip, volume * strength * VolumeSettings.Sfx);
 
         if (withHitstop && hitstopDuration > 0f)
         {
             if (hitstopRoutine != null) StopCoroutine(hitstopRoutine);
             hitstopRoutine = StartCoroutine(Hitstop());
         }
+    }
+
+    /// <summary>Just a camera shake, for heavy hits and landings. Strength in metres.</summary>
+    public void ShakeOnly(float strength)
+    {
+        if (shakeTarget == null) return;
+        if (shakeRoutine != null) StopCoroutine(shakeRoutine);
+        shakeRoutine = StartCoroutine(Shake(strength));
     }
 
     // ---------- Pieces ----------

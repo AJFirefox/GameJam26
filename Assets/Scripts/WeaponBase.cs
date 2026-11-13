@@ -34,6 +34,7 @@ public abstract class WeaponBase : MonoBehaviour
         // No attacking while paused (altar menu, game over) or dead.
         if (Time.timeScale <= 0f) return;
         if (OwnerHealth != null && OwnerHealth.IsDead) return;
+        if (Cursor.lockState != CursorLockMode.Locked || Time.frameCount == PlayerMovement.LastRecaptureFrame) return;
 
         HandleAttackInput();
     }

@@ -118,7 +118,8 @@ public class LuckSystem : MonoBehaviour
 
     void Update()
     {
-        if (logRolls && Input.GetKeyDown(debugRollKey)) Roll();
+        // Debug only: never active in a built game
+        if (logRolls && Application.isEditor && Input.GetKeyDown(debugRollKey)) Roll();
     }
 
     // ======================================================================
@@ -165,7 +166,7 @@ public class LuckSystem : MonoBehaviour
 
         LastRoll = result;
 
-        if (logRolls) Debug.Log($"[Luck] {result}");
+        if (logRolls && Application.isEditor) Debug.Log($"[Luck] {result}");
 
         OnRoll?.Invoke(result);
         if (result.isJackpot) OnJackpot?.Invoke(result);
