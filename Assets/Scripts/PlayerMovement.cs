@@ -11,6 +11,12 @@ public class PlayerMovement : MonoBehaviour
     public float rollDuration = 0.35f;
     public float mouseSensitivity = 2f;
 
+    [Tooltip("Dodge roll key. Not Ctrl: in a browser Ctrl+W closes the tab.")]
+    public KeyCode rollKey = KeyCode.LeftShift;
+    public KeyCode altRollKey = KeyCode.C;
+    [Tooltip("How far below the feet still counts as standing on the ground.")]
+    public float groundCheckDistance = 0.2f;
+
     [Tooltip("Can't be hurt while rolling.")]
     public bool rollGivesInvulnerability = true;
 
@@ -29,7 +35,11 @@ public class PlayerMovement : MonoBehaviour
     /// <summary>True during a weapon lunge (Fortune's Edge hit 3). Hoplite shields check this later.</summary>
     public bool IsLunging => dashTimer > 0f && !dashIsRoll;
 
+    /// <summary>Frame the mouse was re-captured on, so that click doesn't also attack.</summary>
+    public static int LastRecaptureFrame = -1;
+
     private Rigidbody rb;
+    private Collider body;
     private Health health;
     private PlayerStamina stamina;
     private float pitch;
@@ -51,6 +61,7 @@ public class PlayerMovement : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+        body = GetComponent<Collider>();
         health = GetComponent<Health>();
 
         // Physics settings that stop a fast or resting player slipping through floors
@@ -68,10 +79,23 @@ public class PlayerMovement : MonoBehaviour
     {
         if (Time.timeScale <= 0f) return;   // paused (altar menu, game over)
 
-        // Look
-        transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * mouseSensitivity);
-        pitch = Mathf.Clamp(pitch - Input.GetAxis("Mouse Y") * mouseSensitivity, -85f, 85f);
-        cameraTransform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+        // Mouse got freed (Esc in a browser, alt-tab): clicking the game captures it again
+        if (Cursor.lockState != CursorLockMode.Locked)
+        {
+            if (Input.GetMouseButtonDown(0) && !PauseMenu.IsOpen)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+                LastRecaptureFrame = Time.frameCount;
+            }
+        }
+        else
+        {
+            // Look (only while the mouse is captured)
+            transform.Rotate(Vector3.up * Input.GetAxis("Mouse X") * mouseSensitivity);
+            pitch = Mathf.Clamp(pitch - Input.GetAxis("Mouse Y") * mouseSensitivity, -85f, 85f);
+            cameraTransform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+        }
 
         // Read input here, use it in FixedUpdate
         moveInput = transform.right * Input.GetAxisRaw("Horizontal")
@@ -79,7 +103,7 @@ public class PlayerMovement : MonoBehaviour
         moveInput = Vector3.ClampMagnitude(moveInput, 1f);
 
         if (Input.GetKeyDown(KeyCode.Space)) jumpPressed = true;
-        if (Input.GetKeyDown(KeyCode.LeftControl)) rollPressed = true;
+        if (Input.GetKeyDown(rollKey) || Input.GetKeyDown(altRollKey)) rollPressed = true;
     }
 
     /// <summary>
@@ -93,6 +117,31 @@ public class PlayerMovement : MonoBehaviour
         dashSpeed = speed;
         dashTimer = duration;
         dashIsRoll = false;
+    }
+
+    /// <summary>
+    /// Standing on something? Checks just below the bottom of the player's collider, so you can't
+    /// jump or roll again while you're still rising.
+    /// </summary>
+    private bool CheckGrounded(out RaycastHit hit)
+    {
+        Vector3 feet = body != null
+            ? new Vector3(body.bounds.center.x, body.bounds.min.y, body.bounds.center.z)
+            : transform.position;
+        float radius = body != null ? Mathf.Min(body.bounds.extents.x, body.bounds.extents.z) * 0.6f : 0.25f;
+        Vector3 origin = feet + Vector3.up * (radius + 0.05f);
+
+        RaycastHit[] hits = Physics.SphereCastAll(origin, radius, Vector3.down, groundCheckDistance + 0.05f, ~0, QueryTriggerInteraction.Ignore);
+        hit = default;
+        float best = float.MaxValue;
+        bool found = false;
+        foreach (RaycastHit h in hits)
+        {
+            if (h.collider.transform.root == transform) continue;
+            if (h.distance <= 0f && h.point == Vector3.zero) continue;   // started inside something, ignore
+            if (h.distance < best) { best = h.distance; hit = h; found = true; }
+        }
+        return found;
     }
 
     /// <summary>If the player starts inside or above the floor, put their feet on top of it.</summary>
@@ -143,8 +192,7 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        bool grounded = Physics.Raycast(transform.position, Vector3.down, out RaycastHit groundHit, 1.1f, ~0, QueryTriggerInteraction.Ignore)
-                        && groundHit.collider.transform.root != transform;
+        bool grounded = CheckGrounded(out RaycastHit groundHit);
 
         // Safety net: remember solid ground, and catch the player if they drop through the world
         if (grounded && dashTimer <= 0f)

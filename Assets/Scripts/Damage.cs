@@ -112,7 +112,7 @@ public class Damage : MonoBehaviour
 
         float dealt = target.TakeDamage(amount, owner);
 
-        if (logHits) Debug.Log($"[Damage] {owner.name} hit {target.name} for {dealt:0.#}" +
+        if (logHits && Application.isEditor) Debug.Log($"[Damage] {owner.name} hit {target.name} for {dealt:0.#}" +
                                (rollLuck && HasRolled ? $" ({CurrentRoll})" : ""));
 
         OnHitTarget?.Invoke(target, dealt);

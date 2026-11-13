@@ -103,6 +103,16 @@ public class Health : MonoBehaviour
         return healed;
     }
 
+    /// <summary>Raises max health by a fraction (0.15 = +15%) and adds the same amount to current health.</summary>
+    public void IncreaseMaxHealth(float fraction)
+    {
+        if (fraction <= 0f) return;
+        float added = maxHealth * fraction;
+        maxHealth += added;
+        if (!IsDead) currentHealth = Mathf.Min(maxHealth, currentHealth + added);
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+    }
+
     /// <summary>Kills instantly, ignoring invulnerability.</summary>
     public void Kill(GameObject source = null)
     {

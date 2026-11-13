@@ -679,7 +679,7 @@ Transform:
   m_GameObject: {fileID: 373836869}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.49, y: -0.53119993, z: 0.8983}
+  m_LocalPosition: {x: 0.455, y: -0.503, z: 1.101}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1185,7 +1185,7 @@ MonoBehaviour:
   halfJackpotMultiplier: 2
   rollsToFillFavor: 10
   closeEnoughEnabled: 0
-  logRolls: 1
+  logRolls: 0
   debugRollKey: 282
 --- !u!4 &552835719
 Transform:
@@ -1240,7 +1240,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BoonManager
   bloodlustSpeedPerStack: 0.12
   bloodlustMaxStacks: 4
-  ambrosiaHealFraction: 0.4
+  ambrosiaMaxHealthBonus: 0.15
 --- !u!43 &558444518
 Mesh:
   m_ObjectHideFlags: 0
@@ -1560,6 +1560,9 @@ MonoBehaviour:
   rollSpeed: 18
   rollDuration: 0.4
   mouseSensitivity: 2
+  rollKey: 304
+  altRollKey: 99
+  groundCheckDistance: 0.2
   rollGivesInvulnerability: 1
   speedMultiplier: 1
   fallResetDistance: 12
@@ -2148,6 +2151,8 @@ MonoBehaviour:
   bossSpawnPoint: {fileID: 0}
   bossWaveExtraEnemies: 0
   bossHealthIncreasePerAppearance: 0.5
+  waveClearHeal: 0.2
+  bossKillFullHeal: 1
 --- !u!1 &1055453407
 GameObject:
   m_ObjectHideFlags: 0
@@ -2894,7 +2899,7 @@ MonoBehaviour:
   targetTag: Enemy
   owner: {fileID: 599903984}
   rollLuck: 1
-  logHits: 1
+  logHits: 0
 --- !u!1 &1326834103
 GameObject:
   m_ObjectHideFlags: 0
@@ -3738,6 +3743,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8c2abf0760f609b4582ce9e57b02a24e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameOverManager
+  useGameOverScene: 1
+  gameOverScene: GameOverBrah
+  showStatsOnGameOverScene: 1
   mainMenuScene: DrakesAWESOMEScene
   delay: 1.2
   pointsPerWave: 100
@@ -4493,7 +4501,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4d68893a5a7328428bdc8620415d370, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
-  music: {fileID: 8300000, guid: 7fc5da5d2ad812c44a3386bdda976e79, type: 3}
+  music: {fileID: 8300000, guid: eebd57a81eb1cb245a6c2f74c1523ac0, type: 3}
   volume: 0.45
   fadeInTime: 2
   pausedVolume: 0.4
