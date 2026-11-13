@@ -27,6 +27,16 @@ public class GameHUD : MonoBehaviour
     public Color halfJackpotColor = new Color(1f, 0.6f, 0.25f);
     public Color curseColor = new Color(0.75f, 0.35f, 1f);
 
+    [Header("3D dice")]
+    [Tooltip("The dice model (models/dice/stone). Empty = numbered boxes instead of 3D dice.")]
+    public GameObject diceModel;
+    [Tooltip("How far in front of the camera the dice float. Keep above the camera's near clip plane (0.3).")]
+    public float diceDepth = 0.45f;
+    [Tooltip("Size of each die on screen, in HUD pixels (1080p reference).")]
+    public float dieSize = 44f;
+    [Tooltip("Tilts the dice so you can see a bit of the top.")]
+    public float diceTilt = 18f;
+
     [Header("Dice readout")]
     [Tooltip("Seconds a roll stays on screen before fading.")]
     public float rollHoldTime = 1.0f;
@@ -43,6 +53,11 @@ public class GameHUD : MonoBehaviour
     private Text ammoText, bossNameText, boonText, foresightText;
     private CanvasGroup diceGroup, bossGroup, boonGroup;
     private Image damageFlash;
+    private readonly RectTransform[] dieSlots = new RectTransform[DiceRollVisual.MaxDice];
+    private readonly Text[] dieNumbers = new Text[DiceRollVisual.MaxDice];
+    private readonly Image[] dieBoxes = new Image[DiceRollVisual.MaxDice];
+    private DiceRollVisual diceVisual;
+    private const float DieSpacing = 54f;
 
     // ---------- Things we watch ----------
     private Health playerHealth;
@@ -110,6 +125,24 @@ public class GameHUD : MonoBehaviour
 
         spawnManager = FindAnyObjectByType<SpawnManager>();
 
+        if (diceModel != null && Camera.main != null) diceVisual = new DiceRollVisual(diceModel, Camera.main);
+        if (diceVisual == null)
+        {
+            // No dice model: show each number inside a white box instead
+            for (int i = 0; i < DiceRollVisual.MaxDice; i++)
+            {
+                Place(dieNumbers[i].rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(dieSize, dieSize));
+                dieNumbers[i].alignment = TextAnchor.MiddleCenter;
+                dieNumbers[i].fontSize = 28;
+            }
+        }
+        else
+        {
+            // 3D dice show their own faces, so no number labels under them
+            foreach (Image box in dieBoxes) box.enabled = false;
+            foreach (Text num in dieNumbers) num.enabled = false;
+        }
+
         if (LuckSystem.Instance != null)
         {
             HandleFavor(LuckSystem.Instance.FavorNormalized);
@@ -161,6 +194,12 @@ public class GameHUD : MonoBehaviour
         }
     }
 
+    void LateUpdate()
+    {
+        if (diceVisual != null)
+            diceVisual.Tick(dieSlots, dieSize * canvas.scaleFactor * diceGroup.transform.localScale.x, diceDepth, diceGroup.alpha);
+    }
+
     // ======================================================================
     // Event handlers
     // ======================================================================
@@ -185,10 +224,24 @@ public class GameHUD : MonoBehaviour
 
     private void HandleRoll(RollResult roll)
     {
-        // "3 + 4 +1 = 8"
-        string dice = roll.dice != null && roll.dice.Length > 0 ? string.Join(" + ", roll.dice) : "?";
-        string bonus = roll.bonus != 0 ? $"  {roll.bonus:+0;-0}" : "";
-        diceText.text = $"{dice}{bonus} = {roll.total}";
+        // Each die's number under it, then "+1 = 8" beside them
+        int n = roll.dice != null ? Mathf.Min(roll.dice.Length, DiceRollVisual.MaxDice) : 0;
+        for (int i = 0; i < DiceRollVisual.MaxDice; i++)
+        {
+            bool on = i < n;
+            dieSlots[i].gameObject.SetActive(on);
+            if (on) dieNumbers[i].text = roll.dice[i].ToString();
+            dieNumbers[i].color = diceVisual == null
+                ? (roll.isJackpot ? new Color(0.6f, 0.4f, 0f) : new Color(0.1f, 0.1f, 0.1f))   // dark on the white fallback boxes
+                : (roll.isJackpot ? gold : marble);
+        }
+        // Just the total, small, beside the dice (with any bonus in brackets)
+        string bonus = roll.bonus != 0 ? $" <size=15>({roll.bonus:+0;-0})</size>" : "";
+        diceText.text = $"{roll.total}{bonus}";
+        float resultX = 8f + n * DieSpacing + 4f;
+        diceText.rectTransform.anchoredPosition = new Vector2(resultX, 12f);
+        tierText.rectTransform.anchoredPosition = new Vector2(resultX, -14f);
+        if (diceVisual != null) diceVisual.Show(roll.dice, roll.isJackpot, diceTilt);
 
         string label;
         Color color;
@@ -203,10 +256,14 @@ public class GameHUD : MonoBehaviour
         else { label = "NORMAL"; color = marble; }
 
         if (roll.isSnakeEyes) label += "  SNAKE EYES";
-        tierText.text = $"{label}  ×{roll.multiplier:0.##}";
+
+        // Total stays small; a short tag only for the special rolls
+        bool special = roll.isJackpot || roll.isHalfJackpot || roll.isSnakeEyes;
+        tierText.text = special ? $"{label}  ×{roll.multiplier:0.##}" : "";
         tierText.color = color;
-        diceText.color = roll.isJackpot ? gold : marble;
-        tierText.fontSize = roll.isJackpot ? 34 : 24;
+        tierText.fontSize = roll.isJackpot ? 22 : 18;
+        diceText.color = roll.isJackpot ? gold : color;
+        diceText.fontSize = 24;
 
         if (diceRoutine != null) StopCoroutine(diceRoutine);
         diceRoutine = StartCoroutine(ShowRoll(roll.isJackpot));
@@ -366,13 +423,33 @@ public class GameHUD : MonoBehaviour
         MakeTick(reticle, new Vector2(-13, 0), new Vector2(10, 2));    // left
 
         // ---- Dice readout, just right of the crosshair ----
-        RectTransform dice = MakeRect("Dice Readout", root, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(45, 25), new Vector2(420, 90));
+        RectTransform dice = MakeRect("Dice Readout", root, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, 0.5f), new Vector2(45, 20), new Vector2(460, 100));
         diceGroup = dice.gameObject.AddComponent<CanvasGroup>();
         diceGroup.alpha = 0f;
-        diceText = MakeText("Dice", dice, "", 32, marble, TextAnchor.LowerLeft);
-        Place(diceText.rectTransform, new Vector2(0, 0.5f), new Vector2(1, 1), Vector2.zero, Vector2.zero, true);
-        tierText = MakeText("Tier", dice, "", 24, marble, TextAnchor.UpperLeft);
-        Place(tierText.rectTransform, new Vector2(0, 0), new Vector2(1, 0.5f), Vector2.zero, Vector2.zero, true);
+
+        // One slot per die: the 3D die floats here, its number sits underneath.
+        for (int i = 0; i < DiceRollVisual.MaxDice; i++)
+        {
+            RectTransform slot = MakeRect($"Die Slot {i + 1}", dice, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0.5f, 0.5f),
+                                          new Vector2(8f + dieSize * 0.5f + i * DieSpacing, 12f), new Vector2(dieSize, dieSize));
+            dieSlots[i] = slot;
+
+            // Fallback box (only shown when there's no dice model)
+            Image box = slot.gameObject.AddComponent<Image>();
+            box.color = new Color(0.95f, 0.93f, 0.88f, 0.9f);
+            box.raycastTarget = false;
+            dieBoxes[i] = box;
+
+            Text num = MakeText("Number", slot, "", 20, marble, TextAnchor.UpperCenter);
+            Place(num.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, -16f), new Vector2(60f, 26f));
+            dieNumbers[i] = num;
+            slot.gameObject.SetActive(false);
+        }
+
+        diceText = MakeText("Result", dice, "", 32, marble, TextAnchor.MiddleLeft);
+        Place(diceText.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(170f, 12f), new Vector2(300f, 40f), false, new Vector2(0f, 0.5f));
+        tierText = MakeText("Tier", dice, "", 24, marble, TextAnchor.MiddleLeft);
+        Place(tierText.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(170f, -22f), new Vector2(360f, 32f), false, new Vector2(0f, 0.5f));
 
         // ---- Favor meter + Lucky Number, under the crosshair ----
         RectTransform favor = MakeRect("Favor", root, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 1f), new Vector2(0, -45), new Vector2(240, 80));

@@ -50,6 +50,9 @@ public class HeadsOrTails : WeaponBase
         base.Awake();
         coins = maxCoins;
         restRotation = transform.localRotation;
+
+        // Solid gold coin
+        WeaponSkin.AddDefault(gameObject, "Gold");
     }
 
     protected override void OnEquip() => UpdateAmmoHUD();

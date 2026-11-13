@@ -38,6 +38,7 @@ public class Cyclops : CommonEnemy
             return;
         }
 
+        UpdateAnimatorSpeed();
         float distance = Vector3.Distance(transform.position, player.transform.position);
 
         // Walk in until it's at a good throwing distance, then hold position
@@ -62,6 +63,7 @@ public class Cyclops : CommonEnemy
             // Aim at the player's chest, with a little arc
             Vector3 aim = (player.transform.position + Vector3.up - spawnPos).normalized + Vector3.up * 0.15f;
 
+            PlayAttackAnimation();
             GameObject projectile = Instantiate(boulder, spawnPos, Quaternion.identity);
             Rigidbody rb = projectile.GetComponent<Rigidbody>();
             if (rb != null) rb.AddForce(aim.normalized * throwForce, ForceMode.Impulse);

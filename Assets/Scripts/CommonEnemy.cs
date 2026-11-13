@@ -22,7 +22,21 @@ public class CommonEnemy : MonoBehaviour
     [Tooltip("How long the hitbox stays on during a swing.")]
     public float attackActiveTime = 0.2f;
 
+    [Header("Attack wind-up (the player's warning)")]
+    [Tooltip("Seconds the enemy stops and winds up before the hit lands. Back off during this to dodge.")]
+    public float attackWindup = 0.5f;
+    [Tooltip("Seconds standing still after the hit before it chases again.")]
+    public float attackRecovery = 0.35f;
+    [Tooltip("How far it steps forward as it strikes.")]
+    public float attackLunge = 0.4f;
+    [Tooltip("Lean-back angle during the wind-up (only used when there's no attack animation).")]
+    public float attackLeanAngle = 15f;
+
     protected bool canAttack = true;
+    protected bool isAttacking;
+    protected Animator enemyAnimator;
+    private bool hasAnimatorController, hasSpeedParam, hasAttackParam;
+    private float attackLean;
 
     /// <summary>Turned to stone (Snake Eyes). Can't move or attack.</summary>
     public bool IsPetrified { get; private set; }
@@ -37,6 +51,19 @@ public class CommonEnemy : MonoBehaviour
         if (player != null) playerHealth = player.GetComponent<Health>();
 
         if (hitBox != null) hitBox.enabled = false;
+
+        enemyAnimator = GetComponentInChildren<Animator>();
+        if (enemyAnimator != null && enemyAnimator.runtimeAnimatorController != null)
+        {
+            hasAnimatorController = true;
+            enemyAnimator.applyRootMotion = false;   // the NavMeshAgent moves us, not the animation
+            foreach (AnimatorControllerParameter p in enemyAnimator.parameters)
+            {
+                if (p.name == "Speed" && p.type == AnimatorControllerParameterType.Float) hasSpeedParam = true;
+                if (p.name == "Attack" && p.type == AnimatorControllerParameterType.Trigger) hasAttackParam = true;
+            }
+        }
+
         if (health != null) health.OnDied += HandleDeath;
         else Debug.LogWarning($"{name}: enemy has no Health component, so it can't be killed.");
     }
@@ -57,8 +84,23 @@ public class CommonEnemy : MonoBehaviour
             return;
         }
 
+        UpdateAnimatorSpeed();
+        if (isAttacking) return;   // standing still while winding up / striking
+
         FollowPlayer();
         Attacking();
+    }
+
+    /// <summary>Feeds walking speed to the Animator so it blends idle / walk.</summary>
+    protected void UpdateAnimatorSpeed()
+    {
+        if (hasSpeedParam && aI != null) enemyAnimator.SetFloat("Speed", aI.velocity.magnitude);
+    }
+
+    /// <summary>Plays the Animator's "Attack" trigger, if it has one.</summary>
+    protected void PlayAttackAnimation()
+    {
+        if (hasAttackParam) enemyAnimator.SetTrigger("Attack");
     }
 
     /// <summary>Turns to face the player without tilting up or down.</summary>
@@ -77,22 +119,82 @@ public class CommonEnemy : MonoBehaviour
     protected virtual void Attacking()
     {
         float distance = Vector3.Distance(transform.position, player.transform.position);
-        if (distance <= attackRange && canAttack)
+        if (distance <= attackRange && canAttack && !isAttacking)
         {
             canAttack = false;
             StartCoroutine(Swing());
         }
     }
 
-
+    /// <summary>
+    /// Stop, wind up (facing the player), strike with a small step forward, recover.
+    /// The hitbox is only on during the strike, so walking into an enemy doesn't hurt.
+    /// </summary>
     IEnumerator Swing()
-
     {
-        // Hitbox on for a short window, then off. The Damage script on the hitbox deals the damage.
+        isAttacking = true;
+        if (aI.isOnNavMesh) { aI.isStopped = true; aI.velocity = Vector3.zero; }
+        aI.updateRotation = false;
+        PlayAttackAnimation();
+
+        // Wind-up: turn to face the player and lean back
+        for (float t = 0f; t < attackWindup; t += Time.deltaTime)
+        {
+            TurnTowardsPlayer(8f);
+            if (!hasAnimatorController) SetAttackLean(Mathf.Lerp(0f, -attackLeanAngle, t / attackWindup));
+            yield return null;
+        }
+
+        // Strike: hitbox on, lunge forward
         if (hitBox != null) hitBox.enabled = true;
-        yield return new WaitForSeconds(attackActiveTime);
+        Vector3 forward = transform.forward;
+        forward.y = 0f;
+        for (float t = 0f; t < attackActiveTime; t += Time.deltaTime)
+        {
+            if (aI.isOnNavMesh) aI.Move(forward.normalized * (attackLunge / attackActiveTime) * Time.deltaTime);
+            if (!hasAnimatorController) SetAttackLean(Mathf.Lerp(-attackLeanAngle, attackLeanAngle * 0.6f, t / attackActiveTime));
+            yield return null;
+        }
         if (hitBox != null) hitBox.enabled = false;
-        StartCoroutine(ResetAttack());
+
+        // Recovery
+        for (float t = 0f; t < attackRecovery; t += Time.deltaTime)
+        {
+            if (!hasAnimatorController) SetAttackLean(Mathf.Lerp(attackLeanAngle * 0.6f, 0f, t / attackRecovery));
+            yield return null;
+        }
+        EndAttack();
+
+        float rest = attackTime - attackWindup - attackActiveTime - attackRecovery;
+        if (rest > 0f) yield return new WaitForSeconds(rest);
+        canAttack = true;
+    }
+
+    private void EndAttack()
+    {
+        SetAttackLean(0f);
+        isAttacking = false;
+        if (aI != null)
+        {
+            aI.updateRotation = true;
+            if (aI.isOnNavMesh && (health == null || !health.IsDead)) aI.isStopped = false;
+        }
+    }
+
+    private void TurnTowardsPlayer(float turnSpeed)
+    {
+        Vector3 d = player.transform.position - transform.position;
+        d.y = 0f;
+        if (d.sqrMagnitude < 0.01f) return;
+        float yaw = Mathf.LerpAngle(transform.eulerAngles.y, Quaternion.LookRotation(d).eulerAngles.y, turnSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Euler(attackLean, yaw, 0f);
+    }
+
+    /// <summary>Placeholder animation: tips the whole body back/forward. Positive = forward.</summary>
+    private void SetAttackLean(float angle)
+    {
+        attackLean = angle;
+        transform.rotation = Quaternion.Euler(attackLean, transform.eulerAngles.y, 0f);
     }
 
     protected IEnumerator ResetAttack()
@@ -112,6 +214,7 @@ public class CommonEnemy : MonoBehaviour
         {
             StopAllCoroutines();
             knockbackRoutine = null;
+            if (isAttacking) EndAttack();
             if (hitBox != null) hitBox.enabled = false;
             foreach (Damage d in GetComponentsInChildren<Damage>(true)) d.Deactivate();
             if (aI != null && aI.isOnNavMesh) { aI.isStopped = true; aI.velocity = Vector3.zero; }
@@ -119,6 +222,7 @@ public class CommonEnemy : MonoBehaviour
         else
         {
             canAttack = true;
+            isAttacking = false;
             if (aI != null && aI.isOnNavMesh && (health == null || !health.IsDead)) aI.isStopped = false;
         }
     }
@@ -161,6 +265,7 @@ public class CommonEnemy : MonoBehaviour
     {
         StopAllCoroutines();
         if (hitBox != null) hitBox.enabled = false;
+        if (isAttacking) EndAttack();
         if (aI != null && aI.isOnNavMesh) aI.isStopped = true;
     }
 }

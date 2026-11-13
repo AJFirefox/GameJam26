@@ -54,6 +54,9 @@ public class SnakeEyesPistol : WeaponBase
         restRotation = transform.localRotation;
         restPosition = transform.localPosition;
         rounds = magazineSize;
+
+        // Dark gunmetal revolver
+        WeaponSkin.AddDefault(gameObject, "Gunmetal");
     }
 
     protected override void OnEquip()

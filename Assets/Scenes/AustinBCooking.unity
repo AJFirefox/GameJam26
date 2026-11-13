@@ -2516,17 +2516,40 @@ MonoBehaviour:
   weaponName: JackpotHammer
   attackSpeedMultiplier: 1
   headHitbox: {fileID: 1534771128}
-  damage: 45
+  sweeps:
+  - label: '1: Right to left'
+    damage: 45
+    windup:
+      handOffset: {x: 0.3, y: 0.1, z: -0.25}
+      headDirection: {x: 0.85, y: 0.35, z: -0.45}
+    impact:
+      handOffset: {x: -0.15, y: -0.02, z: 0.35}
+      headDirection: {x: -0.15, y: 0.1, z: 1}
+    followThrough:
+      handOffset: {x: -0.7, y: -0.08, z: 0.05}
+      headDirection: {x: -0.9, y: 0, z: 0.3}
+    swingTime: 0.28
+  - label: '2: Left to right'
+    damage: 45
+    windup:
+      handOffset: {x: -0.6, y: 0.05, z: -0.1}
+      headDirection: {x: -0.85, y: 0.3, z: -0.25}
+    impact:
+      handOffset: {x: -0.05, y: -0.02, z: 0.38}
+      headDirection: {x: 0.1, y: 0.1, z: 1}
+    followThrough:
+      handOffset: {x: 0.4, y: -0.05, z: 0.05}
+      headDirection: {x: 0.9, y: 0.1, z: 0.25}
+    swingTime: 0.3
+  swingSize: 1
+  faceRoll: 0
+  hammerLength: 0.9
   windupTime: 0.35
-  slamTime: 0.13
-  impactHold: 0.12
   recoverTime: 0.35
   cooldown: 0.2
-  windupRotation: {x: -75, y: 15, z: 20}
-  windupOffset: {x: 0.05, y: 0.2, z: -0.1}
-  slamRotation: {x: 75, y: -10, z: -10}
-  slamOffset: {x: -0.15, y: -0.1, z: 0.35}
-  impactShake: 0.06
+  comboResetTime: 1.2
+  inputBufferTime: 0.25
+  swingShake: 0.03
   hitShake: 0.12
 --- !u!1001 &1251578590
 PrefabInstance:
@@ -3664,6 +3687,10 @@ MonoBehaviour:
   strongColor: {r: 0.55, g: 0.85, b: 1, a: 1}
   halfJackpotColor: {r: 1, g: 0.6, b: 0.25, a: 1}
   curseColor: {r: 0.75, g: 0.35, b: 1, a: 1}
+  diceModel: {fileID: 8007973187660072525, guid: f06721e268de1ca4983af7f24ec74b72, type: 3}
+  diceDepth: 0.45
+  dieSize: 44
+  diceTilt: 18
   rollHoldTime: 1
   rollFadeTime: 0.4
   damageFlashAlpha: 0.3
